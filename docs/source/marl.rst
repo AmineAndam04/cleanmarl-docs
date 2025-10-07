@@ -38,8 +38,18 @@ In settings where the environment sends a common reward, it becomes difficult to
 Centralized vs Decentralized
 ----------------------------
 
+*Centralized* and *Decentralized* are two important keywords that greatly help us understand and compare different MARL algorithms. They describe to which information a neural network (policy, value or action-value network) takes as input. When individual policies are conditioned only on individual observations :math:`\pi_i(. |o_i)`, we refer to them as *decentralized policies*, the same applies to action-value functions :math:`Q_i(o_i,a_i)`. We usually want (or constrained) to have decentralized policies or action-value function, as they are more convenient during deployment. On the other hand, when a network takes as input the state or the joint observation, we say that it uses central information. In most cases, especially for an actor-critic algorithm, we allow the critic to depend on centralized information, as it's not used during deployment, and restrict the actor to decentralized observations.
+
 
 
 
 Overview of MARL
 ----------------
+
+A good way to understand and compare MARL algorithm is to look at the loss functions they try to optimize and also to pay attention to what information a network relies on (centralized vs decentralized)
+
+
+.. image:: _static/marl-overview.png
+   :alt: Architecture diagram
+   :width: 800px
+   :align: center
