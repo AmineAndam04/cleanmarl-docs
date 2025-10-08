@@ -53,3 +53,28 @@ A good way to understand and compare MARL algorithm is to look at the loss funct
    :alt: Architecture diagram
    :width: 800px
    :align: center
+
+
+Learning resources
+------------------
+
+We assume the reader already has familiarities with Deep Reinforcement Learning. If this is not the case, we highly recommend the following resources:
+
+    1.  `David Silver lectures <https://www.youtube.com/playlist?list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ>`_ 
+
+    2.  `Spinning Up in Deep RL <https://spinningup.openai.com/en/latest/>`_
+
+    3. `Sergey Levine lectures <https://www.youtube.com/playlist?list=PL_iWQOsE6TfXxKgI1GgyV1B_Xa0DxE5eH>`_
+
+    4. Reading main DRL papers alongside `CleanRL <https://github.com/vwxyzjn/cleanrl>`_ implementations
+
+This is not meant to be an exhaustive list, but steems from a personal experience. Another resources that is very helpfull, especially from an implementation standpoint is to check discussion in `stable-baselines3  <https://github.com/DLR-RM/stable-baselines3>`_ issues and pull requests, there you can find many explanations of common implementation tricks used in reinforcement learning.
+
+With a strong understanding of DRL, learning Deep MARL becomes easier to follow. To approach MARL, we suggest the following:
+
+    1. **A must read**  `Multi-Agent Reinforcement Learning: Foundations and Modern Approaches <https://www.marl-book.com/>`_ (free PDF version available)
+
+    2. Read MARL papers.
+
+We also recommand checking `EPyMARL <https://github.com/uoe-agents/epymarl>`_ for implementations. 
+     

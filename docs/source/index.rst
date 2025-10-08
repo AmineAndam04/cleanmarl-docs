@@ -26,6 +26,7 @@ Contents
 
    marl
    cleanmarl
+   design
    
    VDN <algorithms/vdn>
    QMIX <algorithms/qmix>
