@@ -9,6 +9,17 @@ Quick facts:
     - Needs a common reward.
     - Additive factorization.
 
+Key ideas:
+    - VDN learns centralized action-value function :math:`Q^{tot}` decomposed into the same of individual :math:`Q_i` networks
+
+    .. math::
+
+        Q(\mathbf{o}, \mathbf{a}) = \sum_{i \in I} Q_i(o_i, a_i).
+
+
+    - This factorization allows us to have decentralized policies.
+
+    - :math:`Q_i` networks are refereed to as *utility networks* instead of action-value function, as they don't satisfy the Bellman equation. Instead,  :math:`Q^{tot}` is a true action-value function.
 
 VDN is based on Q-learning and works with settings with common reward :math:`r`. Let's forget about the VDN for now and focus on how Q-learning can solve the cooperative MARL problem. There are two approaches we can use, each with its pros and cons.
 
@@ -76,4 +87,12 @@ We don't propagate each individual Q-network separately, but instead, we backpro
 
 It's important to note that :math:`Q(.; \theta)` is not an actual neural network. We only instiantiate the individual networks  :math:`Q_i(.; \theta)`. Another thing is we can can have seprate weights for each network :math:`\theta_i`, instead of :math:`\theta`. However, sharing weights among agents is a common practice in MARL. 
 
+
+Pseudocode
+----------
+
+.. image:: ../_static/vdn_algorithm.svg
+   :alt: Architecture diagram
+   :width: 100%
+   :align: center
 
