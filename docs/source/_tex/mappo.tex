@@ -1,0 +1,83 @@
+\documentclass[varwidth, border=20pt]{standalone}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}  
+\usepackage{amsmath}
+\usepackage{microtype}      
+\usepackage{caption}
+\usepackage{graphicx}
+
+
+\captionsetup{labelfont=bf, font=small}
+\renewcommand{\algorithmiccomment}[1]{\hfill\(\triangleright\) #1}
+\newcommand{\algspace}{\vspace{3pt}}
+
+\begin{document}
+
+\begingroup
+\small                    
+\begin{center}
+  \begin{minipage}{0.99\linewidth} 
+    \hrule height 0.7pt
+    \vspace{3pt}
+    Algorithm: MAPPO
+    \vspace{3pt}
+    \hrule height 0.7pt
+    \vspace{6pt}
+
+   
+    \begin{algorithmic}[1]
+      \State Initialize: $\theta$ the parameters of individual actors $pi_i(.;\theta)$, $\phi$ the parameters of centralized critic $V(;\phi)$
+      \While{$t < T$}
+        \State Initialize a rollout buffer $\mathcal{D}$ // $(episode_1, episode_2, \dots)$
+        \For{ a number of episodes}:
+            \State $current\_episode = \{ \}$ 
+                \While{ $\mathbf{o}_t$ is not $done$}
+                \State Collect observations $\{o^t_1,\dots,o^t_n\}$ and the state $\mathbf{s}^t$
+                \State  Sample an action $a_i^t \sim \pi_i(.|o_i^t)$ for each agent $i$
+                \State Execute joint action $\mathbf{a}^t = (a_1^t,\dots,a_n^t)$
+                \State Collect $r^t$, $done^t$
+                \State Store $(\mathbf{s}^t,\mathbf{o}^t,\mathbf{a}^t,r^t,done^t)$ in $current\_episode$
+                \EndWhile
+            \State Store $current\_episode$ in the rollout buffer $\mathcal{D}$
+        \EndFor
+        \State Process the rollout buffer for batch training // Episodes with different lengths
+        \State Compute the advantages $A^t$ and TD targets $y$
+        \State Compute the actor losses:
+        \begin{align*}
+            \mathcal{L}(\theta)
+                &= \tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \tfrac{1}{n} \sum_i 
+                    \min\!\Bigg(
+                        \frac{\pi(a_i^t \mid o_i^t;\theta)}{\pi(a_i^t \mid o_i^t;\theta_{\text{old}})}\, A^t, \\
+                &\qquad\qquad
+                        \operatorname{clip}\!\left(
+                            \frac{\pi(a_i^t \mid o_i^t;\theta)}{\pi(a_i^t \mid o_i^t;\theta_{\text{old}})},
+                            1-\varepsilon,\,1+\varepsilon
+                        \right) A^t
+                    \Bigg)
+            \end{align*}
+        \State Compute the entropy bonus
+        \Statex
+        \[
+            \mathcal{H}(\theta) =   \tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \tfrac{1}{n} \sum_i \mathcal{H}_i(\theta)
+        \]
+        \State Compute the critic loss: 
+        \Statex
+          \[
+            \mathcal{L}(\phi)=\tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \Big(y^{t,b} -  V(\mathbf{s}^{t,b}; \phi)\Big)^2
+          \]
+
+         \State Update $\theta$ and $\phi$ using: 
+         \[ 
+             \mathcal{L}(\theta,\phi) = - \mathcal{L}(\theta) + \alpha^{critic} \mathcal{L}(\phi) -  \alpha^{entropy} \mathcal{H}(\theta)
+         \]
+
+      \EndWhile
+    \end{algorithmic}
+
+    \vspace{6pt}
+    \hrule height 0.7pt
+  \end{minipage}
+\end{center}
+\endgroup
+
+\end{document}

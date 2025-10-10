@@ -1,6 +1,7 @@
 Multi-Agent Deep Deterministic Policy Gradient
 ==============================================
 
+
     - Paper link:  `MADDPG <https://arxiv.org/abs/1706.02275>`_ 
 
 Quick facts:

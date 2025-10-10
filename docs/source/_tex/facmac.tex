@@ -19,26 +19,23 @@
   \begin{minipage}{0.99\linewidth} 
     \hrule height 0.7pt
     \vspace{3pt}
-    Algorithm: QMIX Training
+    Algorithm: FACMAC
     \vspace{3pt}
     \hrule height 0.7pt
     \vspace{6pt}
 
    
     \begin{algorithmic}[1]
-      \State Initialize: $\theta$ and  $\theta^-$ the parameters of individual and target Q-networks $Q_i$, $\phi$ and $\phi^-$ the parameters of the mixing and target-mixing network $m$.
+      \State Initialize: $\theta$ and  $\theta^-$ the parameters of individual policy and target policy $\mu_i$, $\phi$ and  $\phi^-$ the parameters of individual and target Q-networks $Q_i$, $\psi$ and $\psi^-$ the parameters of the mixing and target-mixing network $m$.
       \State Initialize replay buffer $\mathcal{D}$ // $(episode_1, episode_2, \dots)$
       \While{$t < T$}
         \State $current\_episode = \{ \}$ 
         \While{ $\mathbf{o}_t$ is not $done$}
         \State Collect observations $\{o^t_1,\dots,o^t_n\}$ and state $\mathbf{s}_t$
-          \For{each agent $i$}
-              \State With probability $\epsilon$, select random action $a_i^t$
-              \State otherwise select $a_i^t = \arg\max_{a_i} Q_i(o^t_i,a_i)$
-         \EndFor
-         \State Execute joint action $\mathbf{a}^t = (a_1^t,\dots,a_n^t)$
-         \State Collect $r^t$, $done^t$, $\mathbf{o}^{t+1}$, and $\mathbf{s}_{t+1}$
-         \State Store $(\mathbf{o}^t,\mathbf{a}^t,r^t,done^t,\mathbf{o}^{t+1})$ in $current\_episode$
+        \State Select an action $a^t_i = \mu(o^t_i)$ for each agent $i$. 
+         \State Execute the joint action $\mathbf{a}^t = (a_1^t,\dots,a_n^t)$
+         \State Collect $r^t$, $done^t$
+         \State Store $(\mathbf{s}_t,\mathbf{o}^t,\mathbf{a}^t,r^t,done^t)$ in $current\_episode$
         \EndWhile
         \State Store $current\_episode$ in the replay buffer $\mathcal{D}$
         
@@ -46,19 +43,23 @@
           \State Sample batch of episodes 
           \[ 
             \mathcal{B} = \{ \{\mathbf{s}^{t,b},\mathbf{o}^{t,b},\mathbf{a}^{t,b},r^{t,b},done^{t,b},\mathbf{s'}^{t,b},\mathbf{o'}^{t,b}\}_{t=1 ... L^b}\}_{b=1, ..., |\mathcal{B}|}\]
-          \State Set the targets
+          \State Set the targets 
           \Statex
           \begin{align*}
             y^{t,b} &= r^{t,b} + \gamma (1 - done^{t,b}) \times \\
-            &\quad \max_{(a_1, \dots, a_n)} m(\mathbf{s'}^{t,b}, Q_1(\mathbf{o}_1^{t,b}, a_1;\theta^-), \dots, Q_n(\mathbf{o}_n^{t,b}, a_n;\theta^-); \phi^-)
+            &\quad \max_{(a_1, \dots, a_n)} m(\mathbf{s'}^{t,b}, Q_1(\mathbf{o}_1^{t,b}, a_1;\phi^-), \dots, Q_n(\mathbf{o}_n^{t,b}, a_n;\phi^-); \psi^-)
             \end{align*}
             
-          \State Perform a gradient descent using:
+          \State Update $\phi$ and $\psi$ using :
           \Statex
           \[
-            \mathcal{L}(\theta,\phi)=\tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \Big(y^{t,b}- Q^{tot}(\mathbf{s}^{t,b},\mathbf{o}^{t,b},\mathbf{a}^{t,b};\theta, \phi)\Big)^2
+            \mathcal{L}(\phi,\psi)=\tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \Big(y^{t,b}- Q^{tot}(\mathbf{s}^{t,b},\mathbf{o}^{t,b},\mathbf{a}^{t,b};\phi, \psi)\Big)^2
           \]
-          \State Every $C$ steps, update $\theta^- \leftarrow \theta$, $\phi^- \leftarrow \phi$ 
+          \State Update $\theta$ using: 
+          \[
+            \mathcal{L}(\theta) = - \tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \sum_i Q^{tot}(\mathbf{s}^{t,b},\mu(o^{t,b}_1;\theta), \dots, \mu(o^{t,b}_i;\theta), \dots , \mu(o^{t,b}_n;\theta))
+          \]
+          \State Every $C$ steps, update $\theta^- \leftarrow \theta$, $\phi^- \leftarrow \phi$, $\psi^- \leftarrow \psi$ 
         \EndIf
       \EndWhile
     \end{algorithmic}
