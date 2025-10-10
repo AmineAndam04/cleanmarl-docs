@@ -39,3 +39,11 @@ epub_show_urls = 'footnote'
 html_context = {
     "metatags": '<meta name="google-site-verification" content="pGUJ3Uw-ACan4k_IFjAEHfonB-eSEdjpkTz0yX2cc34" />'
 }
+
+def setup(app):
+    app.add_html_theme('alabaster', None)  # or whatever theme you use
+    app.add_config_value('google_verification', '', 'html')
+    app.add_css_file('custom.css')  # optional
+
+    app.add_html_meta({'name': 'google-site-verification',
+                       'content': 'YOUR_VERIFICATION_CODE'})
