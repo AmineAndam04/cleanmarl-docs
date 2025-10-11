@@ -96,3 +96,142 @@ Pseudocode
    :width: 100%
    :align: center
 
+Implementations
+---------------
+
+We implemented three variants of VDN:
+
+- ``vdn.py``: VDN with single environment and MLP neural networks.
+- ``vdn_multienvs.py``: VDN with parallel environments and MLP neural networks.
+- ``vdn_lstm.py``: VDN with single environment and recurrent neural networks.
+
+Additional details:
+
+- **Replay buffer**: For MLP-based implementations, we store transitions ``(obs, actions,reward,done,next_obs,next_avail_action)``. We need to store the ``next_avail_action`` in order to accurately compute the TD targets as we need the action-value of the best available next action. For the RNN-based implementation, we store sequences of transitions ``(seq_obs, seq_actions,seq_reward,seq_done,seq_next_obs,seq_next_avail_action)`` , and during the training we use the first ``burn_in`` transitions to compute the hidden state ``h``, and use the remaining of the sequence to update the network.
+
+Logging
+-------
+
+We record the following metrics:
+
+- **rollout/ep_reward** : Mean episode reward during environment rollouts.
+- **rollout/ep_length** : Mean episode length during rollouts.
+- **rollout/epsilon** : Current exploration epsilon.
+- **rollout/battle_won** (SMAClite only): Fraction of battle won by SMAC agents
+- **train/loss** : Training loss at the current optimization step.
+- **train/grads** : Magnitude of gradients of the VDN networks.
+- **eval/ep_reward** : Mean episode reward during evaluation.
+- **eval/std_ep_reward** : Standard deviation of episode rewards during evaluation.
+- **eval/ep_length** : Mean episode length during evaluation.
+- **eval/battle_won** ( SMAClite only): Fraction of battles won during evaluation episodes.
+
+
+
+Documentation
+-------------
+
+.. py:class::  cleanmarl.vdn.Args(env_type="smaclite", env_name="3m", env_family="sisl", agent_ids=True,           buffer_size=10000, total_timesteps=1000000, gamma=0.99, learning_starts=5000, train_freq=5, optimizer="Adam", learning_rate=0.0005, batch_size=32, start_e=1, end_e=0.05, exploration_fraction=0.05, hidden_dim=64, num_layers=1, target_network_update_freq=5, polyak=0.005, normalize_reward=False, clip_gradients=5, log_every=10, eval_steps=5000, num_eval_ep=10, use_wnb=False, wnb_project="", wnb_entity="", device="cpu", seed=1)
+
+    :param env_type: Type of the environment: ``smaclite``, ``pz`` for PettingZoo, ``lbf`` for Level-based Foraging.
+    :type env_type: str
+
+    :param env_name: Name of the environment (``3m``, ``simple_spread_v3`` ``Foraging-2s-10x10-4p-2f-v3`` ...)
+    :type env_name: str
+
+    :param env_family: Env family when using a PettingZoo environment (``sisl``, ``mpe`` ...)
+    :type env_family: str
+
+    :param agent_ids: Include agent IDs (one-hot vector) in observations
+    :type agent_ids: bool
+
+    :param buffer_size: The size of the replay buffer
+    :type buffer_size: int
+
+    :param total_timesteps: Total steps of the environment during the training
+    :type total_timesteps: int
+
+    :param gamma: Discount factor
+    :type gamma: float
+
+    :param learning_starts: Number of environment steps to initialize the replay buffer
+    :type learning_starts: int
+
+    :param train_freq: Train the network each ``train_freq`` step in the environment
+    :type train_freq: int
+
+    :param optimizer: The optimizer
+    :type optimizer: str
+
+    :param learning_rate: Learning rate
+    :type learning_rate: float
+
+    :param batch_size: Batch size
+    :type batch_size: int
+
+    :param start_e: The starting value of epsilon, for exploration
+    :type start_e: float
+
+    :param end_e: The end value of epsilon, for exploration
+    :type end_e: float
+
+    :param exploration_fraction: The fraction of ``total-timesteps`` it takes from to go from ``start_e`` to ``end_e``.
+    :type exploration_fraction: float
+
+    :param hidden_dim: Hidden dimension
+    :type hidden_dim: int
+
+    :param num_layers: Number of layers
+    :type num_layers: int
+
+    :param target_network_update_freq: Update the target network each ``target_network_update_freq`` step in the environment
+    :type target_network_update_freq: int
+
+    :param polyak: Polyak coefficient to update the target network
+    :type polyak: float
+
+    :param normalize_reward: Normalize the rewards if True
+    :type normalize_reward: bool
+
+    :param clip_gradients: ``0<`` for no gradients clipping and ``0>`` if clipping gradients at ``clip_gradients``
+    :type clip_gradients: float
+
+    :param log_every: Log rollout stats every ``log_every`` episode
+    :type log_every: int
+
+    :param eval_steps: Evaluate the policy each ``eval_steps`` step
+    :type eval_steps: int
+
+    :param num_eval_ep: Number of evaluation episodes
+    :type num_eval_ep: int
+
+    :param use_wnb: Logging to Weights & Biases if True
+    :type use_wnb: bool
+
+    :param wnb_project: Weights & Biases project name
+    :type wnb_project: str
+
+    :param wnb_entity: Weights & Biases entity name
+    :type wnb_entity: str
+
+    :param device: Device (``cpu``, ``gpu``, ``mps``) *We only support CPU training for now*
+    :type device: str
+
+    :param seed: Random seed
+    :type seed: int
+
+
+
+.. py:class:: cleanmarl.vdn_lstm.Args(env_type="smaclite", env_name="3m", env_family="mpe", agent_ids=True, buffer_size=10000, seq_length=10, burn_in=7, total_timesteps=1000000, gamma=0.99, learning_starts=5000, train_freq=5, optimizer="Adam", learning_rate=0.0007, batch_size=32, start_e=1, end_e=0.05, exploration_fraction=0.01, hidden_dim=64, num_layers=1, normalize_reward=False, target_network_update_freq=1, polyak=0.005, log_every=10, clip_gradients=1, eval_steps=10000, num_eval_ep=10, use_wnb=False, wnb_project="", wnb_entity="", device="cpu", seed=1)
+
+    :param seq_length: Length of the sequence to store in the buffer
+    :type seq_length: int
+
+    :param burn_in: Sequences to burn during batch updates
+    :type burn_in: int
+
+
+
+.. py:class:: cleanmarl.vdn_multienvs.Args(env_type="smaclite", env_name="3m", env_family="mpe", agent_ids=True, num_envs=4, buffer_size=10000, total_timesteps=1000000, gamma=0.99, learning_starts=5000, train_freq=2, optimizer="Adam", learning_rate=0.0005, batch_size=16, clip_gradients=5, start_e=1, end_e=0.05, exploration_fraction=0.05, hidden_dim=64, num_layers=1, target_network_update_freq=1, polyak=0.005, log_every=10, normalize_reward=False, eval_steps=5000, num_eval_ep=5, use_wnb=False, wnb_project="", wnb_entity="", device="mps", seed=1)
+
+    :param num_envs: Number of parallel environments
+    :type num_envs: int

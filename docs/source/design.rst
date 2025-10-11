@@ -1,7 +1,3 @@
 Miscellaneous
 =============
 
-
-
-DESIGN patterns
----------------
