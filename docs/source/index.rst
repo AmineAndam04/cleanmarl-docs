@@ -1,6 +1,10 @@
+.. meta::
+   :google-site-verification: pGUJ3Uw-ACan4k_IFjAEHfonB-eSEdjpkTz0yX2cc34
+
 Welcome to CleanMARL documentation!
 ===================================
 
+   
 CleanMARL provides single file implementations of Deep Multi-Agent Reinforcement Learning algorithms. 
 Moreover, it provides an educational resource to learn about multi-agent reinforcement learning. 
 In a nutshell this project is a combination of `CleanRL <https://github.com/vwxyzjn/cleanrl>`_ 
