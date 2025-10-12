@@ -5,18 +5,23 @@ Welcome to CleanMARL documentation!
 ===================================
 
    
-CleanMARL provides single file implementations of Deep Multi-Agent Reinforcement Learning algorithms. 
-Moreover, it provides an educational resource to learn about multi-agent reinforcement learning. 
+CleanMARL provides single file implementations of Deep Multi-Agent Reinforcement Learning (MARL) algorithms. 
+In addition, it serves as an **educational resource** for learning the algorithms and implementations of MARL. 
 In a nutshell this project is a combination of `CleanRL <https://github.com/vwxyzjn/cleanrl>`_ 
 and `Spinning Up in Deep RL <https://spinningup.openai.com/en/latest/>`_ but for **multi-agent RL**.
 
 
 
 
-.. note::
+Github repository: https://github.com/AmineAndam04/cleanmarl
 
-   This project is under active development.
 
+Main Features
+-------------
+- Implementations of key MARL algorithms: VDN, QMIX, COMA, MADDPG, FACMAC, IPPO, and MAPPO.
+- A documentation for algorithms, code and training details. 
+- We support parallel environments and recurrent policies. 
+- Tensorboard and Weights & Biases logging.
 
 
 
@@ -26,11 +31,9 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Algorithms
 
    marl
    cleanmarl
-   design
    
    VDN <algorithms/vdn>
    QMIX <algorithms/qmix>
@@ -40,8 +43,7 @@ Contents
    Idependent PPO <algorithms/ippo>
    Multi-agent PPO <algorithms/mappo>
 
+   design
+   author
 
 
-Another section
-----------------
-sses

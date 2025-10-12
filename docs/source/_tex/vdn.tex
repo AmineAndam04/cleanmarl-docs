@@ -28,7 +28,7 @@
 
     % the pseudocode block (no floating algorithm environment)
     \begin{algorithmic}[1]
-      \State Initialize $\theta$, the parameters of individual Q-network, and $\theta^-$ the parameters of target network.
+      \State Initialize $\theta$, the parameters of individual Q-networks, and $\theta^-$ the parameters of target networks.
       \State Initialize replay buffer $\mathcal{D}$ // $(\mathbf{o}_t,\mathbf{a}_t,r_t,done,\mathbf{o}_{t+1})$
       \While{$t < T$}
         \State Collect observations $\{o^t_1,\dots,o^t_n\}$

@@ -26,7 +26,7 @@
 
    
     \begin{algorithmic}[1]
-      \State Initialize: $\theta$ the parameters of individual policies $pi_i(.;\theta)$, $\phi$ the parameters of the centralized Q-network $Q(;\phi)$, and $\phi^-$ the parameters the target Q network. 
+      \State Initialize: $\theta$ the parameters of individual policies $\pi_i(.;\theta)$, $\phi$ the parameters of the centralized Q-network $Q(;\phi)$, and $\phi^-$ the parameters the target Q network. 
       \While{$t < T$}
         \State Initialize a rollout buffer $\mathcal{D}$ // $(episode_1, episode_2, \dots)$
         \For{ a number of episodes}:
@@ -35,8 +35,8 @@
                 \State Collect observations $\{o^t_1,\dots,o^t_n\}$ and state $\mathbf{s}^t$
                 \State  Sample an action $a_i^t \sim \pi_i(.|o_i^t)$ for each agent $i$
                 \State Execute joint action $\mathbf{a}^t = (a_1^t,\dots,a_n^t)$
-                \State Collect $r^t$, $done^t$
-                \State Store $(\mathbf{s}^t,\mathbf{o}^t,\mathbf{a}^t,r^t,done^t,\mathbf{o}^{t+1})$ in $current\_episode$
+                \State Collect $r^t$ and  $done^t$
+                \State Store $(\mathbf{s}^t,\mathbf{o}^t,\mathbf{a}^t,r^t,done^t)$ in $current\_episode$
                 \EndWhile
             \State Store $current\_episode$ in the rollout buffer $\mathcal{D}$
         \EndFor
@@ -44,7 +44,7 @@
         \State Train the centralized critic using TD($\lambda$)
         \Statex
           \[
-            \mathcal{L}(\theta)=\tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \Big(y^{t,b}- Q^{tot}(\mathbf{s}^{t,b},\mathbf{o}^{t,b},\mathbf{a}^{t,b}; \phi)\Big)^2
+            \mathcal{L}(\theta)=\tfrac{1}{|\mathcal{B}|}\sum_b \tfrac{1}{L^b} \sum_t \Big(y^{t,b}- Q(\mathbf{s}^{t,b},\mathbf{o}^{t,b},\mathbf{a}^{t,b}; \phi)\Big)^2
           \]
         \State Every $C$ training steps, update $\phi^- \leftarrow \phi$ //training step = one full buffer pass
         \State Compute the counterfactual advantages

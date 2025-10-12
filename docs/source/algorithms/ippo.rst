@@ -6,10 +6,13 @@ Independent Proximal Policy Optimization
 Quick facts:
     - IPPO is each agent implementing PPO using its local observations and actions. 
 
+Background
+----------
 
-Independent PPO is a straightforward extension of PPO into multi-agent RL. In IPPO, the actors and critics conditions on local observations :math:`o_i` and the agents share the weights. 
 
-For each agent :math:`i`  we use the following loss for the actors: 
+Independent PPO is a straightforward extension of PPO to multi-agent RL. In IPPO, each agent has its own actor and critic that condition on local observations :math:`o_i`. Agents share the weights.
+
+For each agent :math:`i`  we use the following loss to train its actor: 
 
 .. math::
 
@@ -19,7 +22,7 @@ For each agent :math:`i`  we use the following loss for the actors:
        \operatorname{clip}\!\left(\frac{\pi(a_i^t \mid o_i^t;\theta)}{\pi(a_i^t \mid o_i^t;\theta_{\text{old}})},\,1-\varepsilon,\,1+\varepsilon\right) A_i^t
      \right)
    
-with :math:`A_i^t` estimated using GAE method with :math:`V_i(;\phi)`
+with :math:`A_i^t` estimated using :math:`V_i(;\phi)`
 
 And for the critics, we use:
 
@@ -58,8 +61,7 @@ Additional details:
 
 - **Rollout buffer**:  we store episodes ``{"obs": [],"actions":[],"reward":[],"states":[],"done":[],"avail_actions":[]}``. Storing ``avail_actions`` is importing to compute the correct critic and actor losses.
 - **Parallel environment**: we run ``batch_size`` environments in parallel
-- **Parallel environment with RNN networks**: When running multiple environments in parallel, some episodes may complete before others, therefor, we keep track of *alive anvironments* at each time step. This is especially important when using RNN policies as the size of the hidden state is fixed at the beginning  of the rollout  at ``(num_envs x num_agents, hidden_dim)`` , but we should only keep upadating ``(num_alive_envs x num_agents, hidden_dim)`` , when some episodes finish.
-
+- **Parallel environments with RNNs**: When using multiple environments in parallel, some episodes may complete before others. We track *alive environments* at each timestep. This is critical for RNN policies, as the hidden state is initially sized ``(num_envs x num_agents, hidden_dim)`` but only updated for ``(num_alive_envs x num_agents, hidden_dim)`` when some episodes finish.
 - **TD(λ) return**: we use the recursive formula from `Reconciling λ-Returns with Experience Replay (Equation 3) <https://arxiv.org/pdf/1810.09967>`_ . We start by :math:`R^{\lambda}_T = 0`
 
 .. math::
@@ -69,13 +71,13 @@ Additional details:
    &= r_t + \gamma  \Big[ \lambda R^{\lambda}_{t+1} + (1-\lambda) \max_{a' \in \mathcal{A}} Q(\hat{s}_{t+1}, a') \Big]
    \end{align}
 
-- **Advantages**: We don't directly compute the advantages using GAE estimates, we instead use the TD(λ) return by exploiting the following formula that can be found in  `page 47 in David Silver's lecture n 4 <https://davidstarsilver.wordpress.com/wp-content/uploads/2025/04/lecture-4-model-free-prediction-.pdf>`_ 
+- **Advantages**: We don't directly estimate the advantages using GAE estimates, we instead use the TD(λ) return by exploiting the following formula that can be found in  `page 47 in David Silver's lecture n 4 <https://davidstarsilver.wordpress.com/wp-content/uploads/2025/04/lecture-4-model-free-prediction-.pdf>`_ 
 
 .. math::
 
   A(s_t,a_t) = R^{\lambda}_t -V(s_t)
 
-- **RNN training** : We use truncated backpropagation through time (TBPTT) to train the RNN network. You can set the length of the sequence using ``tbptt``. 
+- **RNN training** : We use **Truncated Back-Propagation Through Time (TBPTT)** to train the RNN network. You can set the length of the sequence using ``tbptt``. 
 
 Logging
 -------

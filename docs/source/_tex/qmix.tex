@@ -37,8 +37,8 @@
               \State otherwise select $a_i^t = \arg\max_{a_i} Q_i(o^t_i,a_i)$
          \EndFor
          \State Execute joint action $\mathbf{a}^t = (a_1^t,\dots,a_n^t)$
-         \State Collect $r^t$, $done^t$, $\mathbf{o}^{t+1}$, and $\mathbf{s}_{t+1}$
-         \State Store $(\mathbf{o}^t,\mathbf{a}^t,r^t,done^t,\mathbf{o}^{t+1})$ in $current\_episode$
+         \State Collect $r^t$ and  $done^t$
+         \State Store $(\mathbf{s}_t,\mathbf{o}^t,\mathbf{a}^t,r^t,done^t,)$ in $current\_episode$
         \EndWhile
         \State Store $current\_episode$ in the replay buffer $\mathcal{D}$
         

@@ -10,10 +10,15 @@ Quick facts:
     - MADDPG support continuous and discrete actions. 
     - MADDPG support individual rewards, thus can be used for cooperative, competitive, and mixed. 
 
+Background
+----------
+ 
 
-MADDPG is an extension of DDPG to multi-agent settings with the difference that we use a centralized ciritc. The critic network takes as input the state information and the agents actions :math:`Q(\mathbf{s},\mathbf{a};\phi)` and outputs a single value. When having individual rewards, we can use separate centralized critics :math:`Q_i(\mathbf{s},\mathbf{a};\phi_i)`. We also have deterministic individual policies :math:`\mu(o_i;\theta)`. For discrete actions, we use Gumbel-Softmax estimation to compute the gradients with respect to the actions. 
+MADDPG is an extension of DDPG to multi-agent settings, using a centralized critic. The critic network takes as input the state information and all agents' actions :math:`Q(\mathbf{s},\mathbf{a};\phi)` and outputs a single value. When using individual rewards, separate centralized critics can be used: :math:`Q_i(\mathbf{s},\mathbf{a};\phi_i)`. Each agent has a deterministic policy :math:`\mu(o_i;\theta)`. For discrete actions, we use Gumbel-Softmax to compute gradients with respect to actions.
 
-MADDPG is an off-policy algorithm, so we store transitions when interacting with the environment and sample batches when training the actor and critic. In the following, the superscript :math:`b` on top of a variable means that the value is sampled from the replay buffer.  
+
+MADDPG is off-policy, therefor we store transitions while interacting with the environment and sample batches for training the actor and critic. Superscript :math:`b` indicates values sampled from the replay buffer.
+
 To train the critic we use the following loss:
 
 .. math::
@@ -26,8 +31,8 @@ To better understand how to update the actor of agent :math:`i` , it's better if
 
    \nabla_{\theta} \mu_i(o_i) \, \nabla_{a_i} Q(s, a^b_1, \dots,a_i =\mu_i(o_i), \dots , a^b_n) 
 
-When computing the gradients of agent :math:`i`, all the actions are those from the replay buffer, except the :math:`i-th` actions.
 
+When computing the gradient of agent :math:`i`, all the actions are from the replay buffer, except the :math:`i`-th action, which is replaced by the current policy.
 
 .. image:: ../_static/maddpg_network.png
    :alt: Architecture diagram
@@ -55,11 +60,11 @@ We implemented four variants of MADDPG:
 
 Additional details:
 
-- **Replay buffer**: The replay buffer stores episodes instead of transitions, therefore, we sample batch of episodes rather than batch of transitions. Each episode is stored as ``{"obs": [],"actions":[],"reward":[],"states":[],"done":[],"next_avail_actions":[]}`` . We need to store the ``next_avail_action`` in order to accurately compute the TD targets as we need the action-value of the best available next action
+- **Replay buffer**: The replay buffer stores episodes instead of transitions, therefore, we sample batch of episodes rather than a batch of transitions. Each episode is stored as ``{"obs": [],"actions":[],"reward":[],"states":[],"done":[],"next_avail_actions":[]}`` . We store ``next_avail_actions`` to accurately compute TD targets for the best available next action.
 - **Discrete actions**: we only support discrete actions for now
-- **Gumber-softmax**: we use the pytorch built in implementation ``torch.nn.functional.gumbel_softmax``. We use ``hard=True`` during episode collection and when training the critics, and set it to False, ``hard=False`` , when training the actors, which yields better results. 
-- **Parallel environments**: Parallel environments are not as useful for off-policy algorithms as for on-policy settings as we sample from a replay buffer. In order to keep the same values of the number of network updates, we train for multiple epochs in each training step by adding a ``n_epochs`` argument. We log the number of network updates under the name ``train/num_updates``. 
-- **Parallel environment with RNN networks**: When running multiple environments in parallel, some episodes may complete before others, therefor, we keep track of *alive anvironments* at each time step. This is especially important when using RNN policies as the size of the hidden state is fixed at the beginning  of the rollout  at ``(num_envs x num_agents, hidden_dim)`` , but we should only keep upadating ``(num_alive_envs x num_agents, hidden_dim)`` , when some episodes finish.
+- **Gumbel-Softmax**: We use PyTorch's ``torch.nn.functional.gumbel_softmax``. During episode collection and critic training, set ``hard=True``; during actor training, set ``hard=False`` for better results. 
+- **Parallel environments**: Parallel environments are not as useful for off-policy algorithms as for on-policy settings as we sample from a replay buffer. In order to keep comparable number of network updates, we train for multiple epochs in each training step by adding a ``n_epochs`` argument. We log the number of network updates under the name ``train/num_updates``. 
+- **Parallel environments with RNNs**: When using multiple environments in parallel, some episodes may complete before others. We track *alive environments* at each timestep. This is critical for RNN policies, as the hidden state is initially sized ``(num_envs x num_agents, hidden_dim)`` but only updated for ``(num_alive_envs x num_agents, hidden_dim)`` when some episodes finish.
 - **RNN training** : We use truncated backpropagation through time (TBPTT) to train the RNN network. You can set the length of the sequence using ``tbptt``. 
 
 Logging

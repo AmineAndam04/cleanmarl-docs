@@ -26,7 +26,7 @@
 
    
     \begin{algorithmic}[1]
-      \State Initialize: $\theta$ the parameters of individual actors $pi_i(.;\theta)$, $\phi$ the parameters of centralized critic $V(;\phi)$
+      \State Initialize: $\theta$ the parameters of individual actors $\pi_i(.;\theta)$, $\phi$ the parameters of centralized critic $V(;\phi)$
       \While{$t < T$}
         \State Initialize a rollout buffer $\mathcal{D}$ // $(episode_1, episode_2, \dots)$
         \For{ a number of episodes}:

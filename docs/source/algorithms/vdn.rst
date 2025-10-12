@@ -6,8 +6,8 @@ Value-Decomposition Networks For Cooperative Multi-Agent Learning
 Quick facts:
     - VDN is an off-policy and value-based algorithm.
     - VDN works only for discrete actions.
-    - Needs a common reward.
-    - Additive factorization.
+    - Requires a common reward.
+    - Uses additive factorization.
 
 Key ideas:
     - VDN learns centralized action-value function :math:`Q^{tot}` decomposed into the same of individual :math:`Q_i` networks
@@ -19,11 +19,19 @@ Key ideas:
 
     - This factorization allows us to have decentralized policies.
 
-    - :math:`Q_i` networks are refereed to as *utility networks* instead of action-value function, as they don't satisfy the Bellman equation. Instead,  :math:`Q^{tot}` is a true action-value function.
+    - :math:`Q_i` networks are refereed to as *utility networks* rather than action-value function, as they don't satisfy the Bellman equation. Instead,  :math:`Q^{tot}` is a true action-value function.
 
-VDN is based on Q-learning and works with settings with common reward :math:`r`. Let's forget about the VDN for now and focus on how Q-learning can solve the cooperative MARL problem. There are two approaches we can use, each with its pros and cons.
 
-The first approach is to use a single-agent RL algorithm. This consists of considering that there is **one central agent** who receives the joint observation :math:`\mathbf{o}_t` and its action is the joint action :math:`\mathbf{a}_t`. Then our goal is to estimate :math:`Q(\mathbf{o}_t,\mathbf{a}_t;\theta)` as in DQN. In this case, the loss to optimize is:  
+Background
+----------
+
+
+VDN is based on Q-learning and works in settings with a common reward :math:`r`.  
+Let’s first forget about VDN for a while and focus on how Q-learning can solve the cooperative MARL problem. There are two main approaches, each with its pros and cons.
+
+
+The first approach is to use a single-agent RL algorithm. This treats the system as **one central agent** that receives the joint observation :math:`\mathbf{o}_t`, and whose action is the joint action :math:`\mathbf{a}_t`.  
+We then estimate :math:`Q(\mathbf{o}_t, \mathbf{a}_t; \theta)` as in DQN. The loss function is:
 
 .. math::
 
@@ -35,12 +43,12 @@ where:
     
     y_t = r_t + \gamma(1-done) \max_{\mathbf{a'}_t} Q(\mathbf{o}_{t+1}, \mathbf{a'}_t; \theta^{-})
 
-- Pros: The loss function is backpropagated using the team reward which is strongly related to the input of the Q-network: the joint action :math:`a`.
-- Cons: The Q-network takes as input the joint observation :math:`o` and outputs joint action :math:`a`. This can be very problematic as we have to deal with extremely large inputs. Additionally, the output size  grow exponentially with the number of agents.
+- **Pros:** The loss function backpropagates using the team reward, which is strongly related to the input of the Q-network: the joint action :math:`a`.
+- **Cons:** The Q-network takes as input the joint observation :math:`o` and outputs the joint action :math:`a`. This leads to extremely large inputs, and the output size grows exponentially with the number of agents.
 
-
-
-The second approach is to use independent Q-learning. This means that each agent will train its own Q-learning algorithm relying only on its local observation :math:`o_i` and local actions :math:`a_i` . Therefor we have the following :math:`n` loss functions to optimize:
+The second approach is **independent Q-learning (IQL)**.  
+Each agent trains its own Q-learning algorithm using only its local observation :math:`o_i` and local actions :math:`a_i`.  
+We therefore have :math:`n` independent loss functions to optimize:
 
 
 .. math::
@@ -52,41 +60,46 @@ The second approach is to use independent Q-learning. This means that each agent
      y_i^t =r_t + \gamma(1-done)\max_{a'_i} Q(o_i^{t+1}, a'_i; \theta^{-}) 
 
 
-- Pros: The Q-networks are trained using local observations :math:`o_i` and individual actions :math:`a_i`, allowing us to train these networks more efficiently and avoid large inputs. It also becomes easier to deploy these networks.
-- Cons: The individual Q-networks backpropagate a reward signal that is a consequences of the actions of the other agents rather than their own
+- **Pros:** Each Q-network is trained using local observations :math:`o_i` and actions :math:`a_i`, making training more efficient and easier to deploy.
+- **Cons:** Each Q-network backpropagates a reward signal that depends on the actions of other agents rather than its own.
 
-The idea of the VDN  is to combine the two approaches. First, we want to train decentralized network: we rely on local observations :math:`o_i` and local actions :math:`a_i`, thus we train local Q-networks :math:`Q_i(o_i^{t+1}, a'_t; \theta)`. 
 
-Second, we want to use the common reward to backpropagate through a loss that **aggregates the agents**. As this can be done only when working with a centralized Q-network :math:`Q(\mathbf{o}_t, \mathbf{a}_t; \theta)`, we make the following assumption :
+The idea of VDN is to **combine these two approaches**.  
+We want to train decentralized networks using local observations :math:`o_i` and actions :math:`a_i` while still backpropagating the common reward through a loss function that aggregates all agents.
+
+To achieve this, we assume a centralized Q-network :math:`Q(\mathbf{o}^t, \mathbf{a}^t; \theta)` that can be written as:
+
 
 .. math::
     
-     Q(\mathbf{o}, \mathbf{a}; \theta) = \sum_{i \in I} Q_i(o_i, a_i; \theta) \tag{5}
+     Q(\mathbf{o}^t, \mathbf{a}^t; \theta) = \sum_{i \in I} Q_i(o_i^t, a_i^t; \theta) \tag{5}
 
 and we use the following loss function: 
 
 .. math::
     
-     L(\theta) = \left( r_t + \gamma \max_{\mathbf{a'} \in A} Q(\mathbf{o}_{t+1}, \mathbf{a'}; \theta^{-}) - Q(\mathbf{o}_{t}, \mathbf{a}_t; \theta) \right)^2 \tag{6}
+     L(\theta) = \left( r^t + \gamma \max_{\mathbf{a'} \in A} Q(\mathbf{o}^{t+1}, \mathbf{a'}; \theta^{-}) - Q(\mathbf{o}^{t}, \mathbf{a}^t; \theta) \right)^2 \tag{6}
 
 
 with
 
 .. math::
     
-     Q(\mathbf{o}_{t}, \mathbf{a}_t; \theta) = \sum_{i \in I} Q_i(o_i^t, a_i^t; \theta) \tag{7}
+     Q(\mathbf{o}^{t}, \mathbf{a}^t; \theta) = \sum_{i \in I} Q_i(o_i^t, a_i^t; \theta) \tag{7}
 
 and
 
 .. math::
     
-     \max_{\mathbf{a'} \in A} Q(\mathbf{o}_{t+1}, \mathbf{a'}; \theta^{-}) = \sum_{i \in I} \max_{a'_i \in A_i} Q_i(o^{t+1}_i, a'_i;\theta) \tag{8}
+     \max_{\mathbf{a'} \in A} Q(\mathbf{o}^{t+1}, \mathbf{a'}; \theta^{-}) = \sum_{i \in I} \max_{a'_i \in A_i} Q_i(o^{t+1}_i, a'_i;\theta) \tag{8}
 
 
-We don't propagate each individual Q-network separately, but instead, we backpropagate through the sum of the individual Q-networks. 
+We don’t update each individual Q-network separately; instead, we backpropagate through the **sum** of the individual Q-networks.
 
-It's important to note that :math:`Q(.; \theta)` is not an actual neural network. We only instiantiate the individual networks  :math:`Q_i(.; \theta)`. Another thing is we can can have seprate weights for each network :math:`\theta_i`, instead of :math:`\theta`. However, sharing weights among agents is a common practice in MARL. 
 
+It’s important to note that :math:`Q(.; \theta)` is not an actual neural network.  
+Only the individual networks :math:`Q_i(.; \theta)` are instantiated.  
+In practice, we can give each agent its own parameters :math:`\theta_i`. Sharing weights among agents is a common practice in MARL.
 
 Pseudocode
 ----------
