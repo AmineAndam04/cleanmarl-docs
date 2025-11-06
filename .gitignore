@@ -69,6 +69,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+/.vscode
 
 # Translations
 *.mo
@@ -79,7 +80,8 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-
+*.aux
+*.gz
 # Flask stuff:
 instance/
 .webassets-cache
@@ -153,4 +155,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+../.DS_Store
+.DS_Store
+source/.DS_Store
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
