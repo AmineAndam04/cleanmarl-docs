@@ -25,7 +25,7 @@ intersphinx_mapping = {
 }
 intersphinx_disabled_domains = ["std"]
 
-html_baseurl = "https://cleanmarl-docs.readthedocs.io/en/latest/"
+
 templates_path = ["_templates"]
 html_static_path = ["_static"]
 
@@ -35,3 +35,6 @@ html_theme = "sphinx_rtd_theme"
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
+
+
+html_baseurl = "https://cleanmarl-docs.readthedocs.io/en/latest/"
